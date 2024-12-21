@@ -1,5 +1,5 @@
 {
-  description = "DevShell for Python project";
+  description = "DevShell and package for Python project";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
@@ -25,6 +25,28 @@
               scikit-learn
               venvShellHook
             ]);
+        };
+      });
+
+      packages = forEachSupportedSystem ({ pkgs }: {
+        default = pkgs.python312Packages.buildPythonApplication rec {
+          pname = "adaptive-wallpapers";
+          version = "0.1.0";
+
+          # Specify the source directory
+          propagatedBuildInputs = with pkgs.python3Packages; [
+            numba
+            pillow
+            numpy
+          ];
+
+          src = ./.;
+
+          meta = with pkgs.lib; {
+            description = "A Python application with CLI functionality";
+            license = licenses.mit;
+            maintainers = with maintainers; [ your_name_here ];
+          };
         };
       });
     };
