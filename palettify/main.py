@@ -150,7 +150,7 @@ def dirFiles(inputFolder: str, outputFolder: str, palettePath: str):
     
     for image in inputFolder.iterdir():
         if image.suffix.lower() in image_extensions:
-            singleFile(imagePath=image, outputPath=outputFolder.joinpath(f"{image}.o.png"), expandSize=expandSize, palettePath=palettePath)
+            singleFile(imagePath=image, outputPath=outputFolder.joinpath(f"{image}.o.png"), palettePath=palettePath)
         
     # Load the image and apply the palette
 def main(imagePath:str, outputPath:str, palettePath: str, dir: bool=False):
