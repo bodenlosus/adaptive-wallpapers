@@ -30,7 +30,7 @@
 
       packages = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.python312Packages.buildPythonApplication rec {
-          pname = "adaptive-wallpapers";
+          pname = "palettify";
           version = "0.1.0";
 
           # Specify the source directory
