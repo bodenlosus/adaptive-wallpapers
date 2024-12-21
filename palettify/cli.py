@@ -10,6 +10,7 @@ def cli():
     parser.add_argument('-i', '--input', required=True, type=str)
     parser.add_argument('-d', '--dir', required=False, action='store_true', default=False)
     parser.add_argument('-o', '--output', required=False, default='output.png', type=str)
+    parser.add_argument('-p', '--palette', required=True, type=str)
     
     args = parser.parse_args()
     
