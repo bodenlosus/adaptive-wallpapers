@@ -23,12 +23,6 @@
             scikit-learn
           ];
 
-          installPhase = ''
-            runHook preInstall
-            # Add debugging to inspect the build environment
-            runHook postInstall
-          '';
-
           installCheckInputs = with python3.pkgs; [
           ];
         };
