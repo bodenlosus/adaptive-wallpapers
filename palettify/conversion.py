@@ -141,6 +141,7 @@ def singleFile(imagePath:str, outputPath:str, palettePath: str):
 
     # Convert back to an image and display
     palette_image = Image.fromarray(result_array)
+    print(outputPath)
     outputPath = pathlib.Path(outputPath)
     palette_image.save(outputPath)
 
