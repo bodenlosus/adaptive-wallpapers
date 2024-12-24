@@ -13,7 +13,6 @@ def cli():
     parser.add_argument('-p', '--palette', required=True, type=str)
     
     args = parser.parse_args()
-    
     main(
         imagePath=args.input,
         outputPath=args.output,
