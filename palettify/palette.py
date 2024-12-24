@@ -1,5 +1,5 @@
 import pathlib
-from tkinter import Image
+from PIL import Image
 import numpy as np
 import numpy.typing as npt
 from palettify.types import *

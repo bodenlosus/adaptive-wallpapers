@@ -86,10 +86,13 @@ def dirFiles(inputFolder: str, outputFolder: str, palettePath: str):
     
     for image in inputFolder.iterdir():
         if not image.is_file():
+            print(f"Skipping {image} because it is not a regular file.")
             continue
         if image.suffix.lower() in image_extensions:
-            singleFile(imagePath=image, outputPath=outputFolder.joinpath(f"{image.stem}.o.png"), palettePath=palettePath)
-        
+            print(f"Processing {image}...")
+            outputFile = outputFolder.joinpath(f"{image.stem}.o.png")
+            singleFile(imagePath=image, outputPath=outputFile, palettePath=palettePath)
+            print(f"Processed {image} to {outputFile}")  
     # Load the image and apply the palette
 def main(imagePath:str, outputPath:str, palettePath: str, dir: bool=False):
     if dir:
