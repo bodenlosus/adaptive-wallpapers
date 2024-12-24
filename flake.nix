@@ -1,53 +1,62 @@
 {
-  description = "DevShell and package for Python project";
+  inputs.flake-utils.url = "github:numtide/flake-utils";
+  inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
-  };
+  outputs = { self, nixpkgs, flake-utils, ... }:
+    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system:
+      with nixpkgs.legacyPackages.${system};
+      let
+        pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
 
-  outputs = { self, nixpkgs }:
-    let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
-      forEachSupportedSystem = f: nixpkgs.lib.genAttrs supportedSystems (system: f {
-        pkgs = import nixpkgs { inherit system; };
-      });
-    in
-    {
-      devShells = forEachSupportedSystem ({ pkgs }: {
-        default = pkgs.mkShell {
-          venvDir = ".venv";
-          packages = with pkgs; [ python312 ] ++
-            (with pkgs.python312Packages; [
-              pip
-              numba
-              pillow
-              numpy
-              scikit-learn
-              venvShellHook
-            ]);
-        };
-      });
+        pkg = python3.pkgs.buildPythonPackage rec {
+          pname = pyproject.project.name;
+          version = pyproject.project.version;
+          format = "pyproject";
+          src = ./.;
 
-      packages = forEachSupportedSystem ({ pkgs }: {
-        default = pkgs.python312Packages.buildPythonApplication rec {
-          pname = "palettify";
-          version = "0.1.0";
+          nativeBuildInputs = with python3.pkgs; [ setuptools ];
 
-          # Specify the source directory
-          propagatedBuildInputs = with pkgs.python3Packages; [
+          propagatedBuildInputs = with python3.pkgs; [
             numba
             pillow
             numpy
+            scikit-learn
           ];
 
-          src = ./.;
+          installPhase = ''
+            runHook preInstall
+            # Add debugging to inspect the build environment
+            echo "Installed packages:"
+            ls -l $out/lib/python3.12/site-packages
+            runHook postInstall
+          '';
 
-          meta = with pkgs.lib; {
-            description = "A Python application with CLI functionality";
-            license = licenses.mit;
-            maintainers = with maintainers; [ your_name_here ];
-          };
+          installCheckInputs = with python3.pkgs; [
+          ];
+        };
+
+        editablePkg = pkg.overrideAttrs (oldAttrs: {
+          nativeBuildInputs = oldAttrs.nativeBuildInputs ++ [
+            (python3.pkgs.mkPythonEditablePackage {
+              pname = pyproject.project.name;
+              inherit (pyproject.project) scripts version;
+              root = "$PWD";
+            })
+          ];
+        });
+
+      in {
+        packages.default = pkg;
+        devShells.default = mkShell {
+          venvDir = "./.venv";
+          packages = with python3.pkgs; [
+          numba
+          pillow
+          numpy
+          scikit-learn
+          venvShellHook
+          ];
+          inputsFrom = [ editablePkg ];
         };
       });
-    };
 }

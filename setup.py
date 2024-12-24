@@ -9,5 +9,11 @@ setup(name='palettify',
         'console_scripts': [
             'palettify=palettify.cli:cli',
         ]
-    }
-     )
+    },
+      install_requires=[
+        'numba',
+        'pillow',
+        'numpy',
+        'skikit-learn',
+    ],
+)

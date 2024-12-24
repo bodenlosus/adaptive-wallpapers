@@ -1,10 +1,11 @@
+import sys
 from PIL import Image, ImageFilter, ImageEnhance
 import numpy as np
 from numpy.typing import NDArray
 import numpy.typing as npt
 from numba import njit, types, prange
 import pathlib
-import sys
+
 
 PALETTE_SIZE: int = 16
 

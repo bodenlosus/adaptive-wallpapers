@@ -1,5 +1,5 @@
 import argparse
-from palettify.main import main
+from palettify.conversion import main
 import sys
 def cli():
     parser = argparse.ArgumentParser(

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "palettify"
+version = "0.1"
+dependencies = [
+    "numba",
+    "pillow",
+    "numpy",
+    "scikit-learn"
+]
+
+[tool.setuptools]
+packages = ["palettify",]
+[project.scripts]
+palettify = "palettify.cli:cli"
