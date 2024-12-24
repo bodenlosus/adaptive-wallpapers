@@ -26,8 +26,6 @@
           installPhase = ''
             runHook preInstall
             # Add debugging to inspect the build environment
-            echo "Installed packages:"
-            ls -l $out/lib/python3.12/site-packages
             runHook postInstall
           '';
 
