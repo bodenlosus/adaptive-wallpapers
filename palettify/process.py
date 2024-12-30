@@ -4,7 +4,6 @@ from PIL import Image
 import numpy as np
 from palettify.conversion import applyPalette
 from numpy.typing import NDArray
-import curses
 import threading
 
 from palettify.palette import genPalette
@@ -28,33 +27,33 @@ def singleFile(imagePath:str, outputPath:str, palette: NDArray):
     palette_image.save(outputPath)
     
 def dirFiles(inputFolder: str, outputFolder: str, palettePath: str, batchProcess: bool = True, threadCount: int = 4):
-    def wrapped(stdscr):
-        inputFolderPath = pathlib.Path(inputFolder)
-        outputFolderPath = pathlib.Path(outputFolder)
-        image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"}
-        palette = genPalette(palettePath=palettePath)
+    inputFolderPath = pathlib.Path(inputFolder)
+    outputFolderPath = pathlib.Path(outputFolder)
+    
+    if not outputFolderPath.exists(): outputFolderPath.mkdir(exist_ok=True)
+    
+    image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"}
+    palette = genPalette(palettePath=palettePath)
 
-        if batchProcess:
-            fileQ = fQ()
-            fileQ.startQueue(stdscr, threadCount)
+    if batchProcess:
+        fileQ = fQ()
+        fileQ.startQueue(threadCount)
 
-        for image in inputFolderPath.iterdir():
-            if not image.is_file():
-                out(stdscr, 0, f"Skipping {image} because it is not a regular file.")
-                continue
-            if image.suffix.lower() in image_extensions:
-                outputFile = outputFolderPath.joinpath(f"{image.stem}.o.png")
-                if batchProcess:
-                    fileQ.addJob(imagePath=image, outputPath=outputFile, palette=palette)
-                else:
-                    singleFile(imagePath=image, outputPath=outputFile, palette=palette)
+    for image in inputFolderPath.iterdir():
+        if not image.is_file():
+            print(f"Skipping {image} because it is not a regular file.")
+            continue
+        if image.suffix.lower() in image_extensions:
+            outputFile = outputFolderPath.joinpath(f"{image.stem}.o.png")
+            if batchProcess:
+                fileQ.addJob(imagePath=image, outputPath=outputFile, palette=palette)
+            else:
+                singleFile(imagePath=image, outputPath=outputFile, palette=palette)
 
-        if batchProcess:
-            fileQ.joinQueue()
+    if batchProcess:
+        fileQ.joinQueue()
 
-    curses.wrapper(wrapped)
-
-def worker(stdscr, fileQueue:Queue, id: int):
+def worker(fileQueue:Queue, id: int):
     while True:
         args = fileQueue.get()
         
@@ -63,9 +62,9 @@ def worker(stdscr, fileQueue:Queue, id: int):
         
         count, imagePath, outputPath, palette = args
         
-        out(stdscr, id, f"[{count}] Processing {imagePath.name}...")
+        print(f"W{id} - [{count}] Processing {imagePath.name}...")
         singleFile(imagePath, outputPath, palette)
-        out(stdscr, id, f"[{count}] Finished {imagePath.name}!")
+        print(f"W{id} - [{count}] Finished {imagePath.name}!")
         
         fileQueue.task_done()
 
@@ -76,16 +75,14 @@ class fQ():
         self.threadCount = 0
         self.jobNumber = 0
     
-    def startQueue(self, stdscr, threadCount:int=4):
+    def startQueue(self, threadCount:int=4):
         for id in range(threadCount):
-            t = threading.Thread(target=worker, args=(stdscr, self.q, id))
+            t = threading.Thread(target=worker, args=(self.q, id))
             t.start()
-            out(stdscr, id, f"Worker {id} started!")
+            print(f"Worker {id} started!")
             
             self.threadCount += 1
             self.threads.append(t)
-        
-        stdscr.getch()
     
     def addJob(self, imagePath: str, outputPath: str, palette: NDArray):
         self.jobNumber += 1
@@ -99,10 +96,3 @@ class fQ():
         
         for t in self.threads:
             t.join()
-
-def out(stdscr, id, msg):
-    global lock
-    with lock:
-        height, width = stdscr.getmaxyx()
-        stdscr.addstr(id, 0, msg[:width - 1])  # Truncate to fit terminal width
-        stdscr.refresh()
